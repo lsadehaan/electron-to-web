@@ -11,6 +11,7 @@ export class IPCMain {
   private server: JSONRPCServer;
   private clients = new Map<string, WebSocket>();
   private handlers = new Map<string, IPCHandler>();
+  private listeners = new Map<string, Set<IPCHandler>>(); // For on() event listeners
 
   constructor() {
     // Create JSON-RPC server
@@ -57,6 +58,134 @@ export class IPCMain {
     this.handlers.delete(channel);
     this.server.removeMethod(channel);
     console.log(`[IPC] Removed handler: ${channel}`);
+  }
+
+  /**
+   * Handle invoke once (Electron-compatible API)
+   * Automatically removes handler after first invocation
+   * @param channel - IPC channel name
+   * @param handler - Handler function
+   */
+  handleOnce(channel: string, handler: IPCHandler): void {
+    const onceWrapper: IPCHandler = async (event, ...args) => {
+      this.removeHandler(channel);
+      return await handler(event, ...args);
+    };
+
+    this.handle(channel, onceWrapper);
+  }
+
+  /**
+   * Listen for one-way messages (Electron-compatible API)
+   * For use with ipcRenderer.send()
+   * @param channel - IPC channel name
+   * @param listener - Listener function
+   */
+  on(channel: string, listener: IPCHandler): void {
+    if (!this.listeners.has(channel)) {
+      this.listeners.set(channel, new Set());
+    }
+
+    this.listeners.get(channel)!.add(listener);
+
+    // Register JSON-RPC notification handler if not already registered
+    if (!this.handlers.has(channel)) {
+      this.server.addMethod(channel, async (params: any) => {
+        const mockEvent: IPCEvent = {
+          sender: {
+            id: 'renderer',
+          },
+        };
+
+        const args = Array.isArray(params) ? params : [params];
+        const channelListeners = this.listeners.get(channel);
+
+        if (channelListeners) {
+          // Call all listeners (no response expected for on())
+          for (const listener of channelListeners) {
+            try {
+              await listener(mockEvent, ...args);
+            } catch (error) {
+              console.error(`[IPC] Error in listener for ${channel}:`, error);
+            }
+          }
+        }
+
+        // Return undefined for one-way messages
+        return undefined;
+      });
+
+      console.log(`[IPC] Registered listener channel: ${channel}`);
+    }
+  }
+
+  /**
+   * Listen for one-way message once (Electron-compatible API)
+   * Automatically removes listener after first invocation
+   * @param channel - IPC channel name
+   * @param listener - Listener function
+   */
+  once(channel: string, listener: IPCHandler): void {
+    const onceWrapper: IPCHandler = async (event, ...args) => {
+      this.removeListener(channel, onceWrapper);
+      return await listener(event, ...args);
+    };
+
+    this.on(channel, onceWrapper);
+  }
+
+  /**
+   * Remove specific listener (Electron-compatible API)
+   * @param channel - IPC channel name
+   * @param listener - Listener function to remove
+   */
+  removeListener(channel: string, listener: IPCHandler): void {
+    const listeners = this.listeners.get(channel);
+    if (listeners) {
+      listeners.delete(listener);
+
+      // Clean up if no listeners left
+      if (listeners.size === 0) {
+        this.listeners.delete(channel);
+        // Also remove the JSON-RPC method if no invoke handler exists
+        if (!this.handlers.has(channel)) {
+          this.server.removeMethod(channel);
+          console.log(`[IPC] Removed listener channel: ${channel}`);
+        }
+      }
+    }
+  }
+
+  /**
+   * Alias for removeListener (Electron-compatible API)
+   */
+  off(channel: string, listener: IPCHandler): void {
+    this.removeListener(channel, listener);
+  }
+
+  /**
+   * Remove all listeners for channel (Electron-compatible API)
+   * If no channel specified, removes all listeners for all channels
+   * @param channel - Optional channel name
+   */
+  removeAllListeners(channel?: string): void {
+    if (channel) {
+      this.listeners.delete(channel);
+      // Remove JSON-RPC method if no invoke handler exists
+      if (!this.handlers.has(channel)) {
+        this.server.removeMethod(channel);
+        console.log(`[IPC] Removed all listeners for channel: ${channel}`);
+      }
+    } else {
+      this.listeners.clear();
+      // Remove all JSON-RPC methods that are only listeners (not handlers)
+      for (const [ch] of this.listeners) {
+        if (!this.handlers.has(ch)) {
+          this.server.removeMethod(ch);
+        }
+      }
+      console.log(`[IPC] Removed all listeners for all channels`);
+    }
   }
 
   /**
