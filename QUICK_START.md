@@ -22,11 +22,25 @@ Your repository now has complete CI/CD infrastructure:
 
 ## 🚀 Next Steps (YOU NEED TO DO)
 
-### Step 1: Set Up NPM Token (5 minutes)
+### Step 1: Set Up NPM Publishing (5 minutes)
 
 **Why:** To publish packages to NPM automatically
 
-> **Important:** Use granular access tokens (not classic tokens - those are deprecated)
+> **Recommended:** Use Trusted Publishing (no tokens needed!) - See [TRUSTED_PUBLISHING.md](TRUSTED_PUBLISHING.md)
+
+**Option A: Trusted Publishing (Recommended - More Secure)**
+
+1. **Configure on NPM:**
+   - Go to: https://www.npmjs.com/package/electron-to-web/access
+   - Click "Configure Trusted Publishing"
+   - Provider: GitHub Actions
+   - Repository: `lsadehaan/electron-to-web`
+   - Workflow: `release.yml`
+   - Click "Add"
+
+2. **Done!** No GitHub secrets needed.
+
+**Option B: Granular Access Token (Alternative)**
 
 1. **Create NPM granular token:**
    - Go to: https://www.npmjs.com/settings/YOUR_USERNAME/tokens
@@ -34,15 +48,12 @@ Your repository now has complete CI/CD infrastructure:
    - Token name: `electron-to-web-github-actions`
    - Select package: `electron-to-web`
    - Permissions: "Read and write"
-   - Expiration: 1 year
-   - Copy the token (starts with `npm_...`)
+   - Copy the token
 
 2. **Add to GitHub:**
    - Go to: https://github.com/lsadehaan/electron-to-web/settings/secrets/actions
-   - Click "New repository secret"
    - Name: `NPM_TOKEN`
-   - Paste your granular token
-   - Click "Add secret"
+   - Paste token
 
 ### Step 2: Enable Branch Protection (5 minutes)
 
