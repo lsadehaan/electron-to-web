@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-01-03
+
+### Fixed
+- Modernized GitHub Release workflow to use gh CLI instead of deprecated actions
+- Fixed README ASCII art spacing issues
+
+## [0.1.2] - 2026-01-03
+
+### Added
+- Test results now published to GitHub Actions summary page
+
+## [0.1.1] - 2026-01-03
+
+### Added
+- NPM Trusted Publishing (OIDC) for secure automated releases
+- Complete CI/CD documentation (TRUSTED_PUBLISHING.md, QUICK_START.md)
+
 ## [0.1.0] - 2026-01-03
 
 ### Added
