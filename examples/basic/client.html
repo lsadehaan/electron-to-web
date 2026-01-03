@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>electron-to-web Basic Example</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    #output {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 5px;
+      min-height: 100px;
+    }
+    .log {
+      margin: 5px 0;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>electron-to-web Basic Example</h1>
+  
+  <p>This demonstrates IPC communication using electron-to-web:</p>
+  
+  <button onclick="sendPing()">Send Ping</button>
+  <button onclick="calculate()">Calculate 2 + 3</button>
+  
+  <div id="output"></div>
+
+  <script type="module">
+    // Import electron-to-web renderer
+    import { ipcRenderer } from '../../dist/renderer/index.js';
+
+    // Listen for pong events
+    ipcRenderer.on('pong', (event, message) => {
+      log('Received pong: ' + message, 'blue');
+    });
+
+    window.sendPing = async function() {
+      log('Sending ping...', 'gray');
+      const result = await ipcRenderer.invoke('ping', 'Hello from browser!');
+      log('Ping result: ' + JSON.stringify(result), 'green');
+    };
+
+    window.calculate = async function() {
+      log('Calculating 2 + 3...', 'gray');
+      const result = await ipcRenderer.invoke('add', 2, 3);
+      log('Result: 2 + 3 = ' + result.result, 'green');
+    };
+
+    function log(message, color = 'black') {
+      const output = document.getElementById('output');
+      const logEntry = document.createElement('div');
+      logEntry.className = 'log';
+      logEntry.style.color = color;
+      logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      output.appendChild(logEntry);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    log('Connected to server', 'green');
+  </script>
+</body>
+</html>
