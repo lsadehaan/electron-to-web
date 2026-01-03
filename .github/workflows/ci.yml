@@ -75,6 +75,8 @@ jobs:
     name: Test Coverage Report
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      pull-requests: write  # Required to comment on PRs
 
     steps:
     - name: Checkout code
