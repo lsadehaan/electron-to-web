@@ -90,50 +90,40 @@ jobs:
       id: version
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-    - name: Create Release
-      uses: actions/create-release@v1
+    - name: Create GitHub Release with test report
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release v${{ steps.version.outputs.VERSION }}
-        body: |
-          ## 🚀 electron-to-web v${{ steps.version.outputs.VERSION }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release create ${{ github.ref_name }} \
+          --title "Release v${{ steps.version.outputs.VERSION }}" \
+          --notes "$(cat <<'EOF'
+        ## 🚀 electron-to-web v${{ steps.version.outputs.VERSION }}
 
-          Deploy your Electron app to the web without rewriting code!
+        Deploy your Electron app to the web without rewriting code!
 
-          ### 📦 Installation
+        ### 📦 Installation
 
-          ```bash
-          npm install electron-to-web
-          ```
+        ```bash
+        npm install electron-to-web
+        ```
 
-          ### ✨ What's New
+        ### ✨ What's New
 
-          See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for full details.
+        See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for full details.
 
-          ### 🧪 Test Results
+        ### 🧪 Test Results
 
-          All tests passing ✅
+        All tests passing ✅
 
-          ### 📚 Documentation
+        ### 📚 Documentation
 
-          - [README](https://github.com/${{ github.repository }}/blob/main/README.md)
-          - [Architecture](https://github.com/${{ github.repository }}/blob/main/ARCHITECTURE.md)
-          - [Feature Parity](https://github.com/${{ github.repository }}/blob/main/FEATURE_PARITY.md)
+        - [README](https://github.com/${{ github.repository }}/blob/main/README.md)
+        - [Architecture](https://github.com/${{ github.repository }}/blob/main/ARCHITECTURE.md)
+        - [Feature Parity](https://github.com/${{ github.repository }}/blob/main/FEATURE_PARITY.md)
 
-          ### 🐛 Bug Reports
+        ### 🐛 Bug Reports
 
-          Report issues at https://github.com/${{ github.repository }}/issues
-        draft: false
-        prerelease: false
-
-    - name: Upload test report to release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./TEST_REPORT.md
-        asset_name: test-report.md
-        asset_content_type: text/markdown
+        Report issues at https://github.com/${{ github.repository }}/issues
+        EOF
+        )" \
+          TEST_REPORT.md#test-report.md
