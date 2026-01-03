@@ -54,12 +54,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/electron-to-web.git"
+    "url": "https://github.com/lsadehaan/electron-to-web.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/electron-to-web/issues"
+    "url": "https://github.com/lsadehaan/electron-to-web/issues"
   },
-  "homepage": "https://github.com/yourusername/electron-to-web#readme",
+  "homepage": "https://github.com/lsadehaan/electron-to-web#readme",
   "dependencies": {
     "json-rpc-2.0": "^1.7.0",
     "ws": "^8.18.0"
