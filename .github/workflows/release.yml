@@ -55,6 +55,14 @@ jobs:
     - name: Build
       run: npm run build
 
+    - name: Debug OIDC environment
+      run: |
+        echo "ACTIONS_ID_TOKEN_REQUEST_URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:-(not set)}"
+        echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+(set)}"
+        npm config list
+        cat ~/.npmrc 2>/dev/null || echo "No .npmrc in home"
+        cat .npmrc 2>/dev/null || echo "No .npmrc in project"
+
     - name: Publish to NPM
       run: npm publish --access public
 
