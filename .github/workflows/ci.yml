@@ -36,6 +36,12 @@ jobs:
     - name: Run tests
       run: npm test
 
+    - name: Publish test results to summary
+      if: always()
+      run: |
+        echo "## Test Results - Node.js ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+        cat TEST_REPORT.md >> $GITHUB_STEP_SUMMARY
+
     - name: Upload test report
       if: always()
       uses: actions/upload-artifact@v4
