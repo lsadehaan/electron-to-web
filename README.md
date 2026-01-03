@@ -218,12 +218,40 @@ That's it! Your app now runs in the browser with **zero changes** to your IPC lo
 - **Synchronous IPC**: `ipcRenderer.sendSync()` → Not supported (async only in browsers)
 - **Shared Workers**: Can enable renderer-to-renderer communication (opt-in)
 
+### ✅ Native API Support (NEW!)
+
+**Client-side (Pure Web APIs - no server required):**
+- ✅ `clipboard` - Full clipboard API via `navigator.clipboard`
+- ✅ `dialog` - File dialogs via File System Access API + fallback
+- ✅ `Notification` - System notifications via Web Notification API
+- ✅ `screen` - Display information via `window.screen`
+- ✅ `shell.openExternal()` - Open URLs via `window.open()`
+- ✅ `shell.beep()` - Audio beep via Web Audio API
+
+**Server-side (Requires security configuration):**
+- ✅ `shell.openPath()` - Open files in default application
+- ✅ `shell.showItemInFolder()` - Show file in file manager
+- ✅ `shell.trashItem()` - Move files to trash
+- ✅ `app.getPath()` - Get system paths
+
+**Security Model:**
+All server-side operations are disabled by default. Enable with explicit security configuration:
+
+```typescript
+import { createWebServer, TRUSTED_SECURITY_CONFIG } from 'electron-to-web/server';
+
+createWebServer({
+  port: 3001,
+  security: TRUSTED_SECURITY_CONFIG, // Enable all operations (for trusted environments)
+});
+```
+
+See [Native APIs](#native-apis) section for detailed usage and security configuration.
+
 ### ❌ Not Supported (Desktop-only Features)
 
-- **Native Dialogs**: `dialog.showOpenDialog()` → Use HTML5 file picker
-- **Clipboard**: `clipboard.writeText()` → Use `navigator.clipboard`
-- **Shell**: `shell.showItemInFolder()` → Not possible in browsers
 - **Window Controls**: BrowserWindow geometry, minimize, maximize → N/A for web
+- **Synchronous IPC**: `ipcRenderer.sendSync()` → Async only in browsers
 
 See [FEATURE_PARITY.md](./FEATURE_PARITY.md) for detailed comparison.
 
@@ -399,6 +427,243 @@ const { app, server, wss } = createWebServer({
   wsPath: '/ipc'           // WebSocket endpoint (default)
 });
 ```
+
+## Native APIs
+
+electron-to-web provides shims for Electron's native APIs, allowing you to use familiar Electron APIs in the browser.
+
+### Clipboard API
+
+Maps Electron's clipboard API to Web Clipboard API (`navigator.clipboard`).
+
+```typescript
+import { clipboard } from 'electron-to-web/renderer';
+
+// Write text
+await clipboard.writeText('Hello, World!');
+
+// Read text
+const text = await clipboard.readText();
+
+// Write HTML
+await clipboard.writeHTML('<h1>Title</h1>');
+
+// Write image
+const imageBlob = await fetch('/image.png').then(r => r.blob());
+await clipboard.writeImage(imageBlob);
+
+// Check if available (requires HTTPS)
+if (clipboard.isAvailable()) {
+  console.log('Clipboard is available');
+}
+```
+
+**Limitations:**
+- Requires HTTPS (browser security requirement)
+- `type` parameter (selection/clipboard) is ignored in web
+
+### Dialog API
+
+Maps Electron's dialog API to File System Access API with fallback to traditional file input.
+
+```typescript
+import { dialog } from 'electron-to-web/renderer';
+
+// Open file dialog
+const result = await dialog.showOpenDialog({
+  title: 'Select Files',
+  filters: [
+    { name: 'Images', extensions: ['png', 'jpg'] },
+    { name: 'Documents', extensions: ['pdf', 'txt'] }
+  ],
+  properties: ['openFile', 'multiSelections']
+});
+
+if (!result.canceled) {
+  console.log('Selected:', result.filePaths);
+}
+
+// Open directory dialog
+const dirResult = await dialog.showOpenDialog({
+  properties: ['openDirectory']
+});
+
+// Save dialog
+const saveResult = await dialog.showSaveDialog({
+  title: 'Save File',
+  defaultPath: 'document.pdf',
+  filters: [{ name: 'PDF', extensions: ['pdf'] }]
+});
+
+// Message box
+const msgResult = await dialog.showMessageBox({
+  type: 'question',
+  title: 'Confirm',
+  message: 'Are you sure?',
+  buttons: ['Yes', 'No', 'Cancel'],
+  defaultId: 0
+});
+
+console.log('User chose:', msgResult.response);
+
+// Error box
+dialog.showErrorBox('Error', 'Something went wrong!');
+```
+
+**Implementation:**
+- Uses File System Access API in Chrome/Edge
+- Falls back to `<input type="file">` in older browsers
+- Custom modal for complex message boxes
+- Simple alert/confirm for basic dialogs
+
+### Notification API
+
+Maps Electron's Notification API to Web Notification API.
+
+```typescript
+import { Notification } from 'electron-to-web/renderer';
+
+// Request permission
+if (Notification.isSupported()) {
+  const permission = await Notification.requestPermission();
+
+  if (permission === 'granted') {
+    // Create notification
+    const notif = new Notification({
+      title: 'Hello!',
+      body: 'This is a notification',
+      icon: '/icon.png',
+      tag: 'unique-tag'
+    });
+
+    // Listen for events
+    notif.on('click', () => {
+      console.log('Notification clicked');
+    });
+
+    notif.on('close', () => {
+      console.log('Notification closed');
+    });
+
+    // Show notification
+    await notif.show();
+  }
+}
+```
+
+### Screen API
+
+Maps Electron's screen API to `window.screen`.
+
+```typescript
+import { screen } from 'electron-to-web/renderer';
+
+// Get primary display
+const display = screen.getPrimaryDisplay();
+console.log('Resolution:', display.bounds.width, 'x', display.bounds.height);
+console.log('Work area:', display.workArea);
+console.log('Scale factor:', display.scaleFactor);
+console.log('Touch support:', display.touchSupport);
+
+// Get all displays (web returns only primary)
+const displays = screen.getAllDisplays();
+
+// Listen for display changes
+screen.on('display-metrics-changed', () => {
+  console.log('Display changed');
+});
+```
+
+**Limitations:**
+- Web can only access primary display
+- `getCursorScreenPoint()` not available (browser security)
+
+### Shell API
+
+Provides shell operations - some client-side, some requiring server.
+
+```typescript
+import { shell } from 'electron-to-web/renderer';
+
+// Open URL (pure client-side)
+await shell.openExternal('https://example.com');
+
+// Play beep (pure client-side)
+shell.beep();
+
+// Server-side operations (require security config):
+
+// Open file in default app
+const error = await shell.openPath('/path/to/file.pdf');
+if (error === '') {
+  console.log('Opened successfully');
+}
+
+// Show file in folder
+await shell.showItemInFolder('/path/to/file.txt');
+
+// Move to trash
+await shell.trashItem('/path/to/old-file.txt');
+```
+
+### Security Configuration
+
+Server-side native operations require explicit security configuration:
+
+```typescript
+import { createWebServer, TRUSTED_SECURITY_CONFIG } from 'electron-to-web/server';
+
+// Option 1: Fully trusted (all operations allowed)
+createWebServer({
+  port: 3001,
+  security: TRUSTED_SECURITY_CONFIG
+});
+
+// Option 2: Custom security config
+createWebServer({
+  port: 3001,
+  security: {
+    allowShellExecution: true,       // shell.openPath, showItemInFolder, trashItem
+    allowFileSystemAccess: true,     // Future: fs operations
+    allowPathQueries: true,          // app.getPath()
+    allowedPaths: [
+      '/home/user/projects',         // Whitelist specific directories
+      '/tmp'
+    ],
+    validateShellCommand: (command, args) => {
+      // Custom validation
+      const allowed = ['open', 'xdg-open', 'explorer'];
+      return allowed.some(cmd => command.startsWith(cmd));
+    },
+    validateFilePath: (path) => {
+      // Custom path validation
+      return !path.includes('..');    // Prevent directory traversal
+    }
+  }
+});
+
+// Option 3: Safe defaults (all disabled)
+createWebServer({
+  port: 3001
+  // No security config = everything disabled
+});
+```
+
+**Security Error Handling:**
+
+```typescript
+import { shell } from 'electron-to-web/renderer';
+
+try {
+  await shell.openPath('/etc/passwd');
+} catch (error) {
+  if (error.message.includes('[Security]')) {
+    console.error('Operation not allowed:', error.message);
+  }
+}
+```
+
+See [examples/native-apis-example.ts](./examples/native-apis-example.ts) for complete examples.
 
 ## Migration Guide
 
