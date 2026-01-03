@@ -47,21 +47,16 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
-        # NO registry-url - prevents .npmrc creation that interferes with OIDC
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Upgrade npm to latest
+      run: npm install -g npm@latest
 
     - name: Install dependencies
       run: npm install
 
     - name: Build
       run: npm run build
-
-    - name: Debug OIDC environment
-      run: |
-        echo "ACTIONS_ID_TOKEN_REQUEST_URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:-(not set)}"
-        echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+(set)}"
-        npm config list
-        cat ~/.npmrc 2>/dev/null || echo "No .npmrc in home"
-        cat .npmrc 2>/dev/null || echo "No .npmrc in project"
 
     - name: Publish to NPM
       run: npm publish --access public
