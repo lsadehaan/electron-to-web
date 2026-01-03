@@ -1,13 +1,13 @@
 # Electron-to-Web E2E Test Report
 
-**Generated:** 2026-01-03T13:01:01.750Z
+**Generated:** 2026-01-03T15:08:24.244Z
 
 ## Test Summary
 
 | Metric | Value |
 |--------|-------|
-| Total Tests | 18 |
-| Passed | 18 |
+| Total Tests | 25 |
+| Passed | 25 |
 | Failed | 0 |
 | Pass Rate | 100% |
 
@@ -92,6 +92,43 @@
 - ✅ should handle empty strings and special characters
 - ✅ should handle nested objects and arrays
 
+### ✅ ipcRenderer.send()
+
+**Test Cases:**
+
+- ✅ should send one-way message from renderer to main
+- ✅ should handle multiple listeners on same channel
+
+### ✅ ipcMain.once()
+
+**Test Cases:**
+
+- ✅ should call listener only once
+
+### ✅ ipcRenderer.once()
+
+**Test Cases:**
+
+- ✅ should call renderer listener only once
+
+### ✅ ipcMain.handleOnce()
+
+**Test Cases:**
+
+- ✅ should handle invoke only once, then remove handler
+
+### ✅ ipcMain.removeHandler()
+
+**Test Cases:**
+
+- ✅ should remove handler and reject subsequent calls
+
+### ✅ Unknown
+
+**Test Cases:**
+
+- ✅ should remove specific listener (ipcRenderer.removeListener)
+
 ## Electron IPC Compatibility Matrix
 
 | Feature | Status | Compatibility | Notes |
@@ -101,6 +138,12 @@
 | Connection Lifecycle | ✅ Pass | Automatic cleanup on disconnect, supports reconnection | 4 tests |
 | Error Handling | ✅ Pass | JSON-RPC error responses, server stability maintained | 2 tests |
 | Data Types | ✅ Pass | JSON serialization - supports all JSON-compatible types | 5 tests |
+| ipcRenderer.send() | ✅ Pass | N/A | 2 tests |
+| ipcMain.once() | ✅ Pass | N/A | 1 test |
+| ipcRenderer.once() | ✅ Pass | N/A | 1 test |
+| ipcMain.handleOnce() | ✅ Pass | N/A | 1 test |
+| ipcMain.removeHandler() | ✅ Pass | N/A | 1 test |
+| Unknown | ✅ Pass | N/A | 1 test |
 
 ## Implementation Details
 

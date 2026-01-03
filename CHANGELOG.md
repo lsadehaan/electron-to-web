@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-03
+
+### Added
+- **Complete Electron IPC API coverage** - 100% feature parity with Electron's IPC system
+- **ipcMain.on()** - Listen for one-way messages from renderer (use with `ipcRenderer.send()`)
+- **ipcMain.once()** - Listen for one-way message once, then auto-remove
+- **ipcMain.handleOnce()** - Handle invoke request once, then auto-remove handler
+- **ipcMain.removeListener() / off()** - Remove specific event listener
+- **ipcMain.removeAllListeners()** - Remove all listeners for channel or all channels
+- **ipcRenderer.once()** - Listen for event once, then auto-remove (was implemented but untested)
+- **webContents.sendTo()** - Send notification to specific client by ID (was implemented but untested)
+- **Comprehensive test suite** - 25 E2E tests covering all IPC features (100% passing)
+- **IPC_FEATURE_ANALYSIS.md** - Complete API coverage documentation
+
+### Changed
+- Test coverage increased from 18 to 25 tests
+- README updated with complete API reference for all ipcMain and ipcRenderer methods
+- All listener/handler removal methods now properly tested
+
+### Technical Details
+- ipcMain now supports both `handle()` (for invoke) and `on()` (for send) patterns
+- All `once()` methods properly auto-remove after first invocation
+- Listener cleanup properly removes JSON-RPC methods when no listeners remain
+- Test server includes comprehensive handlers for all new features
+
 ## [0.1.3] - 2026-01-03
 
 ### Fixed

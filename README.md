@@ -185,14 +185,33 @@ That's it! Your app now runs in the browser with **zero changes** to your IPC lo
 
 ### ✅ Fully Supported
 
-- **Request/Response**: `ipcRenderer.invoke()` / `ipcMain.handle()`
-- **One-way Messages**: `ipcRenderer.send()` (fire-and-forget)
-- **Event Listening**: `ipcRenderer.on()` / `removeListener()` / `removeAllListeners()`
-- **Broadcast Events**: `webContents.send()` (to all clients)
-- **Error Handling**: Standard JSON-RPC error codes
-- **Reconnection**: Automatic WebSocket reconnection with exponential backoff
-- **TypeScript**: Full type safety with generics
-- **Multiple Clients**: Supports many browser tabs/windows
+**ipcRenderer (Client-side):**
+- ✅ `invoke()` - Request/response pattern with async handlers
+- ✅ `send()` - One-way messages (fire-and-forget)
+- ✅ `on()` - Listen for events from main process
+- ✅ `once()` - Listen for event once, then auto-remove
+- ✅ `removeListener()` / `off()` - Remove specific listener
+- ✅ `removeAllListeners()` - Remove all listeners for channel
+
+**ipcMain (Server-side):**
+- ✅ `handle()` - Register async request handler
+- ✅ `handleOnce()` - Handle request once, then auto-remove
+- ✅ `on()` - Listen for one-way messages from renderer
+- ✅ `once()` - Listen for message once, then auto-remove
+- ✅ `removeHandler()` - Remove invoke handler
+- ✅ `removeListener()` / `off()` - Remove specific listener
+- ✅ `removeAllListeners()` - Remove all listeners for channel
+
+**webContents (Server-side):**
+- ✅ `send()` - Broadcast notifications to all connected clients
+- ✅ `sendTo()` - Send notification to specific client by ID
+
+**Additional Features:**
+- ✅ **Error Handling**: Standard JSON-RPC error codes
+- ✅ **Reconnection**: Automatic WebSocket reconnection with exponential backoff
+- ✅ **TypeScript**: Full type safety with generics
+- ✅ **Multiple Clients**: Supports many browser tabs/windows
+- ✅ **100% Test Coverage**: 25 comprehensive E2E tests
 
 ### ⚠️ Partial Support (Browser Limitations)
 
@@ -214,7 +233,7 @@ See [FEATURE_PARITY.md](./FEATURE_PARITY.md) for detailed comparison.
 
 #### `ipcMain.handle(channel, handler)`
 
-Register a handler for IPC requests.
+Register a handler for IPC requests (for use with `ipcRenderer.invoke()`).
 
 ```typescript
 import { ipcMain } from 'electron-to-web/main';
@@ -227,12 +246,62 @@ ipcMain.handle('channel:name', async (event, ...args) => {
 });
 ```
 
+#### `ipcMain.handleOnce(channel, handler)`
+
+Register a handler that automatically removes itself after being called once.
+
+```typescript
+ipcMain.handleOnce('one-time:channel', async (event, data) => {
+  return { received: data };
+}); // Auto-removed after first invocation
+```
+
+#### `ipcMain.on(channel, listener)`
+
+Listen for one-way messages from renderer (sent via `ipcRenderer.send()`).
+
+```typescript
+ipcMain.on('log:message', (event, message) => {
+  console.log(`Client ${event.sender.id}:`, message);
+});
+```
+
+#### `ipcMain.once(channel, listener)`
+
+Listen for one-way message once, then automatically remove listener.
+
+```typescript
+ipcMain.once('startup:complete', (event, data) => {
+  console.log('App started:', data);
+}); // Auto-removed after first call
+```
+
 #### `ipcMain.removeHandler(channel)`
 
-Remove a registered handler.
+Remove a registered invoke handler.
 
 ```typescript
 ipcMain.removeHandler('channel:name');
+```
+
+#### `ipcMain.removeListener(channel, listener)` / `ipcMain.off()`
+
+Remove specific event listener.
+
+```typescript
+const handler = (event, data) => { /* ... */ };
+ipcMain.on('channel', handler);
+// Later:
+ipcMain.removeListener('channel', handler);
+```
+
+#### `ipcMain.removeAllListeners([channel])`
+
+Remove all listeners for a channel, or all channels if not specified.
+
+```typescript
+ipcMain.removeAllListeners('channel'); // Remove all listeners for 'channel'
+ipcMain.removeAllListeners(); // Remove all listeners
 ```
 
 #### `BrowserWindow.webContents.send(channel, ...args)`
@@ -244,6 +313,14 @@ import { BrowserWindow } from 'electron-to-web/main';
 
 const mainWindow = new BrowserWindow();
 mainWindow.webContents.send('notification', { message: 'Hello!' });
+```
+
+#### `BrowserWindow.webContents.sendTo(clientId, channel, ...args)`
+
+Send notification to specific client by ID.
+
+```typescript
+mainWindow.webContents.sendTo('client-123', 'private:message', { data: 'secret' });
 ```
 
 ### Renderer Process (Client-side)
@@ -276,7 +353,17 @@ ipcRenderer.on('notification', (event, data) => {
 });
 ```
 
-#### `ipcRenderer.removeListener(channel, listener)`
+#### `ipcRenderer.once(channel, listener)`
+
+Listen for event once, then automatically remove listener.
+
+```typescript
+ipcRenderer.once('ready', (event, data) => {
+  console.log('App ready:', data);
+}); // Auto-removed after first notification
+```
+
+#### `ipcRenderer.removeListener(channel, listener)` / `ipcRenderer.off()`
 
 Remove specific event listener.
 
