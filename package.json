@@ -34,7 +34,10 @@
     "watch": "tsc --watch",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build",
-    "test": "echo \"Tests coming soon\" && exit 0"
+    "test": "npm run test:e2e",
+    "test:e2e": "npm run build && node tests/run-tests.mjs",
+    "test:mocha": "npm run build && mocha tests/e2e.test.mjs",
+    "test:watch": "npm run build && mocha tests/e2e.test.mjs --watch"
   },
   "keywords": [
     "electron",
@@ -64,6 +67,8 @@
     "@types/express": "^5.0.6",
     "@types/node": "^20.19.27",
     "@types/ws": "^8.18.1",
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
     "typescript": "^5.3.3"
   },
   "peerDependencies": {
