@@ -41,27 +41,28 @@ That's it. Your IPC handlers, event listeners, and business logic remain **100% 
 - `ipcRenderer.on(channel, handler)` → JSON-RPC notification listener
 
 **Architecture:**
+
 ```
-┌─────────────────────────────────────────────────────────┐
-│  Browser (Your React/Vue/etc. app - UNCHANGED)          │
-│  import { ipcRenderer } from 'electron-to-web/renderer' │
-│                                                          │
-│  await ipcRenderer.invoke('user:create', data)  ────────┼──┐
-│  ipcRenderer.on('user:created', handler)        ────────┼──┤
-└─────────────────────────────────────────────────────────┘  │
-                                                              │
-              JSON-RPC 2.0 over WebSocket (single connection)│
-                                                              │
-┌─────────────────────────────────────────────────────────┐  │
-│  Node.js Server (Your Electron main code - UNCHANGED)   │  │
-│  import { ipcMain } from 'electron-to-web/main'         │  │
-│                                                          │  │
-│  ipcMain.handle('user:create', async (event, data) => { │◄─┘
-│    const user = await db.createUser(data);              │
-│    mainWindow.webContents.send('user:created', user);   │
-│    return { success: true, user };                      │
-│  });                                                     │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│  Browser (Your React/Vue/etc. app - UNCHANGED)           │
+│  import { ipcRenderer } from 'electron-to-web/renderer'  │
+│                                                           │
+│  • await ipcRenderer.invoke('user:create', data)         │
+│  • ipcRenderer.on('user:created', handler)               │
+└──────────────────────────────────────────────────────────┘
+                          ↕
+         JSON-RPC 2.0 over WebSocket (single connection)
+                          ↕
+┌──────────────────────────────────────────────────────────┐
+│  Node.js Server (Your Electron main code - UNCHANGED)    │
+│  import { ipcMain } from 'electron-to-web/main'          │
+│                                                           │
+│  ipcMain.handle('user:create', async (event, data) => {  │
+│    const user = await db.createUser(data);               │
+│    mainWindow.webContents.send('user:created', user);    │
+│    return { success: true, user };                       │
+│  });                                                      │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ## Quick Start
