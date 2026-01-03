@@ -7,6 +7,8 @@ import type { Application, RequestHandler } from 'express';
 import { WebSocketServer, type WebSocket } from 'ws';
 import type { Server as HTTPServer } from 'http';
 import { ipcMain } from '../main/ipc-main.js';
+import { registerNativeHandlers, unregisterNativeHandlers } from '../main/native-handlers.js';
+import { mergeSecurityConfig, type SecurityConfig } from '../shared/security-config.js';
 
 export interface ServerOptions {
   /** HTTP port (default: 3001) */
@@ -26,6 +28,9 @@ export interface ServerOptions {
 
   /** Authentication middleware */
   authentication?: RequestHandler;
+
+  /** Security configuration for native API operations */
+  security?: SecurityConfig;
 
   /** Callback when client connects */
   onConnection?: (ws: WebSocket, clientId: string) => void;
@@ -71,11 +76,18 @@ export async function createWebServer(options: ServerOptions = {}): Promise<{
     wsPath = '/ipc',
     cors = false,
     authentication,
+    security,
     onConnection,
     onDisconnect,
   } = options;
 
   app = express();
+
+  // Register native API handlers with security config
+  if (security) {
+    const securityConfig = mergeSecurityConfig(security);
+    registerNativeHandlers(securityConfig);
+  }
 
   // JSON body parser
   app.use(express.json());
@@ -197,6 +209,11 @@ export async function createWebServer(options: ServerOptions = {}): Promise<{
   server.on('close', () => {
     clearInterval(heartbeatInterval);
     wss.close();
+
+    // Unregister native handlers if they were registered
+    if (security) {
+      unregisterNativeHandlers();
+    }
   });
 
   return { app, server, wss };
