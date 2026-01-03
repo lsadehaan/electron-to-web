@@ -35,6 +35,9 @@ jobs:
     name: Publish to NPM
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for OIDC
+      contents: read
 
     steps:
     - name: Checkout code
@@ -44,7 +47,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
-        registry-url: 'https://registry.npmjs.org'
 
     - name: Install dependencies
       run: npm install
@@ -52,10 +54,14 @@ jobs:
     - name: Build
       run: npm run build
 
-    - name: Publish to NPM
-      run: npm publish --access public
+    - name: Configure npm for OIDC
+      run: |
+        npm config set //registry.npmjs.org/:_authToken=\${NODE_AUTH_TOKEN}
+
+    - name: Publish to NPM (with provenance)
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        NODE_AUTH_TOKEN: 'OIDC'  # Dummy value - OIDC token is used instead
+      run: npm publish --provenance --access public
 
   create-release:
     name: Create GitHub Release
