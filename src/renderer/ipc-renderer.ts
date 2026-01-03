@@ -3,7 +3,7 @@
  * Provides Electron-compatible IPC API using JSON-RPC over WebSocket
  */
 
-import { Client as JSONRPCClient, JSONRPCRequest } from 'json-rpc-2.0';
+import { JSONRPCClient, JSONRPCRequest } from 'json-rpc-2.0';
 import type { IPCEvent } from '../shared/types.js';
 
 export class IPCRenderer {
@@ -26,7 +26,7 @@ export class IPCRenderer {
         return Promise.reject(new Error('WebSocket not connected'));
       }
 
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         // Send request
         this.ws!.send(JSON.stringify(request));
 

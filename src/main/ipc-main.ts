@@ -3,7 +3,7 @@
  * Provides Electron-compatible IPC API using JSON-RPC over WebSocket
  */
 
-import { Server as JSONRPCServer, JSONRPCServerMiddleware } from 'json-rpc-2.0';
+import { JSONRPCServer, JSONRPCServerMiddleware } from 'json-rpc-2.0';
 import type { WebSocket } from 'ws';
 import type { IPCEvent, IPCHandler } from '../shared/types.js';
 
@@ -65,38 +65,11 @@ export class IPCMain {
    * @param message - Raw message string
    * @param clientId - Client identifier
    */
-  async handleMessage(ws: WebSocket, message: string, clientId?: string): Promise<void> {
+  async handleMessage(ws: WebSocket, message: string, _clientId?: string): Promise<void> {
     try {
       const jsonRPCMessage = JSON.parse(message);
 
-      // Create server middleware to inject client ID into event
-      const withClientId: JSONRPCServerMiddleware<void> = async (next, request, serverParams) => {
-        // Modify handler to inject correct client ID
-        const originalMethod = this.server['nameToMethodMapping'].get(request.method);
-        if (originalMethod) {
-          // Wrap handler to inject client ID
-          const wrappedMethod = async (params: any) => {
-            const handler = this.handlers.get(request.method);
-            if (handler) {
-              const mockEvent: IPCEvent = {
-                sender: {
-                  id: clientId || 'unknown',
-                },
-              };
-              const args = Array.isArray(params) ? params : [params];
-              return await handler(mockEvent, ...args);
-            }
-            return originalMethod(params);
-          };
-
-          // Temporarily replace method
-          this.server['nameToMethodMapping'].set(request.method, wrappedMethod);
-        }
-
-        return await next(request, serverParams);
-      };
-
-      const response = await this.server.receiveAndSend(jsonRPCMessage);
+      const response = await this.server.receive(jsonRPCMessage);
 
       // Send response if present (requests have responses, notifications don't)
       if (response && ws.readyState === 1) {
@@ -162,7 +135,7 @@ export class IPCMain {
 
     const message = JSON.stringify(notification);
 
-    for (const [clientId, ws] of this.clients) {
+    for (const [_clientId, ws] of this.clients) {
       if (ws.readyState === 1) {
         // OPEN
         ws.send(message);

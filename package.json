@@ -2,6 +2,7 @@
   "name": "electron-to-web",
   "version": "0.1.0",
   "description": "Deploy your Electron app to the web without rewriting code - drop-in replacement for Electron's IPC using JSON-RPC over WebSocket",
+  "type": "module",
   "main": "dist/main/index.js",
   "types": "dist/main/index.d.ts",
   "exports": {
@@ -60,12 +61,13 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@types/ws": "^8.5.10",
+    "@types/express": "^5.0.6",
+    "@types/node": "^20.19.27",
+    "@types/ws": "^8.18.1",
     "typescript": "^5.3.3"
   },
   "peerDependencies": {
-    "express": "^4.18.0 || ^5.0.0"
+    "express": "^5.2.1"
   },
   "engines": {
     "node": ">=18.0.0"

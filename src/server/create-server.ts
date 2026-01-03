@@ -49,18 +49,18 @@ function generateClientId(): string {
  * @param options Server configuration options
  * @returns Server instances (app, server, wss)
  */
-export function createWebServer(options: ServerOptions = {}): {
+export async function createWebServer(options: ServerOptions = {}): Promise<{
   app: Application;
   server: HTTPServer;
   wss: WebSocketServer;
-} {
+}> {
   // Dynamic import of express to avoid bundling in renderer
   let express: any;
   let app: Application;
   let server: HTTPServer;
 
   try {
-    express = require('express');
+    express = (await import('express')).default;
   } catch (error) {
     throw new Error('express is required. Install it with: npm install express');
   }
@@ -113,7 +113,7 @@ export function createWebServer(options: ServerOptions = {}): {
   }
 
   // Health check endpoint
-  app.get('/api/health', (req, res) => {
+  app.get('/api/health', (_req, res) => {
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -135,7 +135,7 @@ export function createWebServer(options: ServerOptions = {}): {
   console.log(`[electron-to-web] WebSocket server listening on ${wsPath}`);
 
   // Handle WebSocket connections
-  wss.on('connection', (ws, req) => {
+  wss.on('connection', (ws, _req) => {
     const clientId = generateClientId();
 
     console.log(`[electron-to-web] Client connected: ${clientId}`);
