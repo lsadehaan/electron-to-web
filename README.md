@@ -2,8 +2,10 @@
 
 **Deploy your Electron app to the web without rewriting code**
 
+[![CI](https://github.com/lsadehaan/electron-to-web/actions/workflows/ci.yml/badge.svg)](https://github.com/lsadehaan/electron-to-web/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/electron-to-web.svg)](https://www.npmjs.com/package/electron-to-web)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/node/v/electron-to-web)](https://nodejs.org)
 
 `electron-to-web` is a drop-in replacement for Electron's IPC system that enables your desktop app to run in the browser. It provides shims for `ipcMain`, `ipcRenderer`, and `BrowserWindow` that automatically convert IPC communication to JSON-RPC over WebSocket.
 

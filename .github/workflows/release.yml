@@ -1,0 +1,136 @@
+name: Release & Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install express (peer dependency)
+      run: npm install express
+
+    - name: Run build
+      run: npm run build
+
+    - name: Run tests
+      run: npm test
+
+  publish-npm:
+    name: Publish to NPM
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build
+      run: npm run build
+
+    - name: Publish to NPM
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  create-release:
+    name: Create GitHub Release
+    needs: publish-npm
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install express (peer dependency)
+      run: npm install express
+
+    - name: Run tests and generate report
+      run: npm test
+
+    - name: Extract version from tag
+      id: version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release v${{ steps.version.outputs.VERSION }}
+        body: |
+          ## 🚀 electron-to-web v${{ steps.version.outputs.VERSION }}
+
+          Deploy your Electron app to the web without rewriting code!
+
+          ### 📦 Installation
+
+          ```bash
+          npm install electron-to-web
+          ```
+
+          ### ✨ What's New
+
+          See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for full details.
+
+          ### 🧪 Test Results
+
+          All tests passing ✅
+
+          ### 📚 Documentation
+
+          - [README](https://github.com/${{ github.repository }}/blob/main/README.md)
+          - [Architecture](https://github.com/${{ github.repository }}/blob/main/ARCHITECTURE.md)
+          - [Feature Parity](https://github.com/${{ github.repository }}/blob/main/FEATURE_PARITY.md)
+
+          ### 🐛 Bug Reports
+
+          Report issues at https://github.com/${{ github.repository }}/issues
+        draft: false
+        prerelease: false
+
+    - name: Upload test report to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./TEST_REPORT.md
+        asset_name: test-report.md
+        asset_content_type: text/markdown
