@@ -10,32 +10,68 @@ This guide walks you through setting up automated testing, releases, and branch 
 
 ## 1. NPM Token Setup
 
-To publish packages to NPM automatically, you need to create an NPM access token.
+To publish packages to NPM automatically, you need to create an NPM granular access token.
 
-### Create NPM Token
+> **Note:** NPM classic tokens were deprecated in December 2025. You must use the new granular access tokens for CI/CD.
 
-1. **Login to NPM**
-   ```bash
-   npm login
-   ```
+### Create NPM Granular Access Token
 
-2. **Generate an access token**
-   - Go to https://www.npmjs.com/settings/YOUR_USERNAME/tokens
-   - Click "Generate New Token"
-   - Select "Automation" token type
-   - Copy the token (starts with `npm_...`)
+**Option 1: Via NPM Website (Recommended for first-time setup)**
 
-3. **Add token to GitHub Secrets**
-   - Go to your GitHub repository
-   - Navigate to: **Settings → Secrets and variables → Actions**
+1. **Go to NPM token settings**
+   - Visit: https://www.npmjs.com/settings/YOUR_USERNAME/tokens
+   - Click "Generate New Token" → "Granular Access Token"
+
+2. **Configure token permissions**
+   - **Token Name:** `electron-to-web-github-actions`
+   - **Expiration:** 1 year (or custom)
+   - **Packages and scopes:**
+     - Select packages: Choose `electron-to-web`
+     - Permissions: `Read and write`
+   - **Organizations:** None (unless needed)
+   - **IP ranges:** Leave empty (GitHub Actions IPs vary)
+
+3. **Generate and copy token**
+   - Click "Generate Token"
+   - Copy the token immediately (starts with `npm_...`)
+   - **Important:** You won't see it again!
+
+**Option 2: Via NPM CLI (For automation)**
+
+```bash
+# Login to NPM
+npm login
+
+# Create granular token (requires npm v9.0.0+)
+npm token create --type granular \
+  --name "electron-to-web-github-actions" \
+  --package "electron-to-web" \
+  --permission "read-write" \
+  --expires 365d
+```
+
+### Add Token to GitHub Secrets
+
+1. **Go to repository settings**
+   - Navigate to: https://github.com/lsadehaan/electron-to-web/settings/secrets/actions
    - Click "New repository secret"
+
+2. **Add secret**
    - Name: `NPM_TOKEN`
-   - Value: Paste your NPM token
+   - Secret: Paste your granular access token
    - Click "Add secret"
 
-### Verify Token
+### Verify Token Works
 
-The token will be used automatically by the release workflow when you create a tag.
+The token will be automatically used by the release workflow when you push a version tag.
+
+**Test locally (optional):**
+```bash
+# This won't publish, just checks auth
+echo "//registry.npmjs.org/:_authToken=YOUR_TOKEN" > .npmrc
+npm whoami
+rm .npmrc  # Don't commit this!
+```
 
 ## 2. Branch Protection Setup
 
