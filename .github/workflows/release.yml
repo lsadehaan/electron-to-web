@@ -47,12 +47,20 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
 
     - name: Install dependencies
       run: npm install
 
     - name: Build
       run: npm run build
+
+    - name: Debug OIDC
+      run: |
+        echo "OIDC Token URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:-not set}"
+        echo "OIDC Token Available: ${{ job.services != null && 'yes' || 'no' }}"
+        npm --version
+        node --version
 
     - name: Publish to NPM (with provenance)
       run: npm publish --provenance --access public
