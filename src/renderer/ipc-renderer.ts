@@ -26,17 +26,12 @@ export class IPCRenderer {
         return Promise.reject(new Error('WebSocket not connected'));
       }
 
-      return new Promise((resolve) => {
-        // Send request
-        this.ws!.send(JSON.stringify(request));
+      // Send request
+      this.ws!.send(JSON.stringify(request));
 
-        // For notifications (no ID), resolve immediately
-        if (!request.id) {
-          resolve(undefined);
-        }
-
-        // For requests, response will come via onmessage and be handled by client.receive()
-      });
+      // Resolve immediately - JSON-RPC client handles its own promise management
+      // Responses come via onmessage and are handled by client.receive()
+      return Promise.resolve(undefined);
     });
 
     this.connect();
