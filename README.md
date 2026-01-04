@@ -835,6 +835,54 @@ And ensure `tsconfig.json` includes:
 }
 ```
 
+## Documentation
+
+### Essential Guides
+
+📚 **Before migrating, read these guides to avoid common issues:**
+
+- **[Common Pitfalls](./COMMON_PITFALLS.md)** ⚠️ - Must-read guide covering:
+  - IPC calls not resolving
+  - Dialog and file system issues
+  - Build configuration problems
+  - Browser compatibility concerns
+
+- **[Build Configuration](./BUILD_CONFIGURATION.md)** 🔧 - Detailed build setup:
+  - Vite configuration (recommended)
+  - Webpack alternatives
+  - Post-build scripts
+  - Performance optimization
+
+- **[Migration Guide](./examples/snippet-manager/MIGRATION_GUIDE.md)** 📖 - Step-by-step migration:
+  - Architecture understanding
+  - Client vs server responsibilities
+  - Code examples
+  - Testing strategies
+
+### Key Concepts
+
+**Client-Side vs Server-Side Operations:**
+
+```
+CLIENT (Browser)              SERVER (Node.js)
+├─ Dialogs (File System      ├─ File operations (server)
+│  Access API)                ├─ Database queries
+├─ Clipboard (browser)        ├─ Authentication
+├─ Notifications (browser)    ├─ Business logic
+└─ File handles              └─ Shell operations (server)
+```
+
+**Not all Electron APIs can go through IPC.** Some must run on the client (dialogs, clipboard), others on the server (file operations, databases). See [Common Pitfalls](./COMMON_PITFALLS.md#architecture-issues) for details.
+
+### Examples
+
+- **[Code Snippet Manager](./examples/snippet-manager/)** - Full-featured app demonstrating:
+  - Dialog operations (import/export)
+  - Clipboard API
+  - File System Access API
+  - Notifications
+  - Real-world migration patterns
+
 ## Contributing
 
 Contributions welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).

@@ -1,0 +1,24 @@
+{
+  "name": "snippet-manager-electron",
+  "version": "1.0.0",
+  "description": "Code Snippet Manager - Electron example showcasing native APIs",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build:web": "vite build",
+    "start:web": "cd web-server && npm install && npm start",
+    "test:web": "node test/e2e.test.js"
+  },
+  "keywords": [
+    "electron",
+    "snippets",
+    "code-manager"
+  ],
+  "author": "electron-to-web",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "vite": "^5.4.11"
+  }
+}

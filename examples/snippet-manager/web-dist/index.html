@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Snippet Manager</title>
+  <script type="module" crossorigin src="/main-BK8I9p4O.js"></script>
+  <link rel="modulepreload" crossorigin href="/preload.js">
+  <link rel="stylesheet" crossorigin href="/assets/main-mvqWU3YK.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <h1>📝 Code Snippet Manager</h1>
+      <div class="header-actions">
+        <button id="openFolderBtn" class="btn btn-secondary" title="Open snippets folder">
+          📁 Open Folder
+        </button>
+        <button id="importBtn" class="btn btn-secondary" title="Import snippet">
+          📥 Import
+        </button>
+        <button id="newSnippetBtn" class="btn btn-primary">
+          ➕ New Snippet
+        </button>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- Sidebar - Snippet List -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h2>Snippets</h2>
+          <input type="text" id="searchInput" placeholder="Search snippets..." class="search-input">
+        </div>
+        <div id="snippetList" class="snippet-list">
+          <div class="empty-state">
+            <p>No snippets yet</p>
+            <p class="hint">Click "New Snippet" to create one</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content - Snippet Editor -->
+      <main class="main-content">
+        <div id="emptyState" class="empty-state-main">
+          <h2>Welcome to Snippet Manager!</h2>
+          <p>Create and organize your code snippets</p>
+          <p class="hint">This app demonstrates electron-to-web native API support:</p>
+          <ul class="features-list">
+            <li>📋 Clipboard API - Copy snippets</li>
+            <li>💾 File System - Save & load snippets</li>
+            <li>📂 Dialog API - Import & export</li>
+            <li>🔗 Shell API - Open folders & URLs</li>
+            <li>🔔 Notifications - Get notified</li>
+            <li>⚙️ App API - User data paths</li>
+          </ul>
+        </div>
+
+        <div id="editorView" class="editor-view" style="display: none;">
+          <div class="editor-header">
+            <input type="text" id="snippetTitle" placeholder="Snippet Title" class="title-input">
+            <div class="editor-actions">
+              <button id="exportBtn" class="btn btn-secondary" title="Export snippet">
+                📤 Export
+              </button>
+              <button id="copyBtn" class="btn btn-secondary" title="Copy code">
+                📋 Copy
+              </button>
+              <button id="saveBtn" class="btn btn-primary">
+                💾 Save
+              </button>
+              <button id="deleteBtn" class="btn btn-danger" title="Delete snippet">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+
+          <div class="editor-metadata">
+            <div class="form-group">
+              <label for="snippetLanguage">Language</label>
+              <select id="snippetLanguage" class="form-control">
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="cpp">C++</option>
+                <option value="csharp">C#</option>
+                <option value="go">Go</option>
+                <option value="rust">Rust</option>
+                <option value="ruby">Ruby</option>
+                <option value="php">PHP</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="sql">SQL</option>
+                <option value="bash">Bash</option>
+                <option value="text">Plain Text</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="snippetTags">Tags (comma-separated)</label>
+              <input type="text" id="snippetTags" placeholder="react, hooks, useState" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="snippetDescription">Description</label>
+            <input type="text" id="snippetDescription" placeholder="Brief description" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="snippetCode">Code</label>
+            <textarea id="snippetCode" placeholder="Paste your code here..." class="code-editor"></textarea>
+          </div>
+
+          <div class="snippet-info">
+            <span id="createdDate"></span>
+            <span id="updatedDate"></span>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div id="appInfo" class="app-info"></div>
+      <div class="footer-links">
+        <a href="#" id="docsLink" class="footer-link">📚 Documentation</a>
+        <a href="#" id="githubLink" class="footer-link">🐙 GitHub</a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Use web preload script -->
+  <script type="module" src="preload.js"></script>
+  <script defer src="renderer-wrapper.js"></script>
+</body>
+</html>

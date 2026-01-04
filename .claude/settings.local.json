@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:web:*)",
+      "Bash(bash:*)",
+      "Bash(timeout 5 npm start)",
+      "Bash(npm start)",
+      "Bash(/c/Windows/System32/taskkill.exe /F /PID 586184)",
+      "Bash(ls:*)",
+      "Bash(taskkill.exe:*)",
+      "Bash(/c/Windows/System32/taskkill.exe /F /PID 643620)",
+      "Bash(node server.js:*)"
+    ]
+  }
+}

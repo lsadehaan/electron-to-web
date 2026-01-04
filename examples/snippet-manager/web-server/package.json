@@ -1,0 +1,15 @@
+{
+  "name": "snippet-manager-web-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Web server for Code Snippet Manager using electron-to-web",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "electron-to-web": "file:../../..",
+    "express": "^5.0.0"
+  }
+}
