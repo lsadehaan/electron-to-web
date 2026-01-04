@@ -20,6 +20,11 @@ This guide covers common issues developers encounter when migrating Electron app
 
 **Why it fails**: Some APIs like dialogs, notifications, and client-side file access can't run on a headless server.
 
+**Important Note on Dialogs**:
+- **Dialog APIs are ALWAYS client-side** - they let users select files from their own computer
+- For server-side file operations (browsing server directories), **implement custom APIs**
+- Most apps don't need server-side file selection - just use client-side dialogs and upload content via IPC
+
 **Solution**: Understand which APIs run where:
 
 ```
@@ -158,6 +163,68 @@ async function importFile(fileName) {
   });
 }
 ```
+
+### ℹ️ When to Implement Custom Server-Side File APIs
+
+**Question**: "What if I need to browse/select files on the server?"
+
+**Answer**: Implement custom IPC handlers for your specific use case.
+
+**Use Cases for Server-Side File Operations**:
+1. **Remote code editor** - browsing project files on server
+2. **Log file viewer** - selecting server logs
+3. **Media server** - managing server-stored media
+4. **Backup management** - choosing server backup files
+
+**Example Implementation**:
+
+```javascript
+// Server-side: Custom file browser handler
+ipcMain.handle('server:listDirectory', async (event, dirPath) => {
+  // Validate path to prevent directory traversal
+  const safePath = path.resolve('/allowed/base/path', dirPath);
+  if (!safePath.startsWith('/allowed/base/path')) {
+    throw new Error('Invalid path');
+  }
+
+  const files = await fs.readdir(safePath, { withFileTypes: true });
+  return files.map(f => ({
+    name: f.name,
+    isDirectory: f.isDirectory(),
+    path: path.join(dirPath, f.name)
+  }));
+});
+
+ipcMain.handle('server:readFile', async (event, filePath) => {
+  const safePath = path.resolve('/allowed/base/path', filePath);
+  return await fs.readFile(safePath, 'utf-8');
+});
+
+// Client-side: Custom UI for server file browser
+async function browseServerFiles(currentPath = '/') {
+  const files = await ipcRenderer.invoke('server:listDirectory', currentPath);
+
+  // Show custom file picker UI
+  const selectedFile = await showCustomFilePicker(files, currentPath);
+
+  if (selectedFile.isDirectory) {
+    return browseServerFiles(selectedFile.path);
+  }
+
+  return selectedFile;
+}
+```
+
+**Security Considerations**:
+- ✅ Validate all paths to prevent `../../../etc/passwd` attacks
+- ✅ Use allowlist of base directories
+- ✅ Check file permissions before reading
+- ✅ Limit file sizes to prevent memory exhaustion
+- ✅ Rate limit requests to prevent DoS
+
+**Most apps don't need this** - client-side dialogs + IPC for uploads covers 90% of use cases.
+
+---
 
 ### ❌ Pitfall 4: File Export Not Working
 
