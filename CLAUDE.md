@@ -206,11 +206,61 @@ mainWindow.webContents.sendTo(clientId, 'event:name', data);
 
 ## Publishing
 
-The package is published to npm with:
+### Automated Release Process (CI/CD)
+
+Publishing is **fully automated** via GitHub Actions. The workflow triggers on git tags:
+
+**To publish a new version:**
+
+1. **Update version in package.json**
+   ```bash
+   # Edit package.json and change "version": "0.x.x"
+   ```
+
+2. **Commit the version bump**
+   ```bash
+   git add package.json
+   git commit -m "chore: bump version to 0.x.x"
+   ```
+
+3. **Create and push annotated tag**
+   ```bash
+   git tag -a v0.x.x -m "Release v0.x.x
+
+   🐛 Bug Fixes:
+   - Description of fixes
+
+   ✨ Features:
+   - Description of new features
+
+   📚 Documentation:
+   - Documentation updates"
+
+   git push origin main
+   git push origin v0.x.x
+   ```
+
+4. **CI/CD automatically:**
+   - Runs all tests
+   - Builds the project
+   - Publishes to npm (using OIDC trusted publishing)
+   - Creates GitHub release with notes
+
+**Workflow file:** `.github/workflows/release.yml`
+
+**Requirements:**
+- Tag must match pattern `v*.*.*` (e.g., `v0.2.0`)
+- Tag must be annotated (`-a` flag)
+- npm publishing uses OIDC (no manual token needed)
+
+**Versioning:**
+- Follows semver (MAJOR.MINOR.PATCH)
+- Bug fixes → PATCH (0.1.4 → 0.1.5)
+- New features → MINOR (0.1.x → 0.2.0)
+- Breaking changes → MAJOR (0.x.x → 1.0.0)
+
+**Package contents:**
 - `files`: Only `dist/`, README, docs, LICENSE
 - `main`: Points to `dist/main/index.js`
 - `types`: Points to `dist/main/index.d.ts`
-- `exports`: Provides three entry points (main, renderer, server)
-- `prepublishOnly`: Cleans and rebuilds before publishing
-
-Versioning follows semver. Update version in package.json and create git tag.
+- `exports`: Three entry points (main, renderer, server)
