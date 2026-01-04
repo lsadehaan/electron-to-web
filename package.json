@@ -1,6 +1,6 @@
 {
   "name": "electron-to-web",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Deploy your Electron app to the web without rewriting code - drop-in replacement for Electron's IPC using JSON-RPC over WebSocket",
   "type": "module",
   "main": "dist/main/index.js",
